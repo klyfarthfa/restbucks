@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe "Orders", type: :request do
   let(:headers) {
     {
-      "ACCEPT" => "application/json"
+      "ACCEPT" => "application/json",
+      'HTTP_AUTHORIZATION' => ActionController::HttpAuthentication::Basic.encode_credentials("happy", "golucky")
     }
   }
   let(:createable_attributes) {

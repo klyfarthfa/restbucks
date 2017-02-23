@@ -1,5 +1,8 @@
 class OrdersController < ApplicationController
+  include ActionController::HttpAuthentication::Basic::ControllerMethods
+  before_action :authenticate
   before_action :set_order, only: [:show, :update, :destroy, :pay, :complete]
+
 
   # GET /orders/1
   # GET /orders/1.json
@@ -75,6 +78,14 @@ class OrdersController < ApplicationController
             order_params[:items][index][:options] = item_options unless item_options.empty?
           }
           order_params[:order_items_attributes] = order_params.delete :items if order_params[:items]
+        end
+      end
+    end
+
+    def authenticate
+      authenticate_with_http_basic do |user, password|
+        unless user == "happy" && password == "golucky"
+          head :forbidden and return
         end
       end
     end

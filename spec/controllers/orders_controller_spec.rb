@@ -18,6 +18,22 @@ RSpec.describe OrdersController, type: :controller do
     {}
   }
 
+  let(:basic_auth) { ActionController::HttpAuthentication::Basic.encode_credentials("happy", "golucky") }
+  before(:each) do
+    request.env['HTTP_AUTHORIZATION'] = basic_auth
+  end
+
+  describe 'with incorrect authorization' do
+    before(:each) do
+      request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials("fake", "password")
+    end
+    it 'should render not_authorized' do
+      order = Order.create! createable_attributes
+      get :show, params: {id: order.id}, session: valid_session, format: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "POST #create" do
     context "with valid params" do
       it "creates a new Order" do
@@ -53,7 +69,7 @@ RSpec.describe OrdersController, type: :controller do
       end
       it "renders an unprocessable entity" do
         put :update, params: {id: order.id, order: new_params}, session: valid_session, format: :json
-        expect(response.status).to eq(422)
+        expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
