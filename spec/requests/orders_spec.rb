@@ -15,6 +15,14 @@ RSpec.describe "Orders", type: :request do
       let(:order) {
         Order.create! createable_attributes
       }
+      context 'with the existing etag' do
+        let(:etag) { "#{Digest::MD5.hexdigest(ActiveSupport::Cache.expand_cache_key(order.cache_key))}" }
+        it 'should render not modified' do
+          get "/order/#{order.id}", headers: headers.merge({"HTTP_IF_NONE_MATCH" => "W/\"#{etag}\""})
+          expect(response).to have_http_status(:not_modified)
+        end
+      end
+
       it 'should render json appropriate for the order' do
         get "/order/#{order.id}", headers: headers
         expect(response.content_type).to eq("application/json")

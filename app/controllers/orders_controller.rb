@@ -7,6 +7,9 @@ class OrdersController < ApplicationController
   # GET /orders/1
   # GET /orders/1.json
   def show
+    if stale? @order
+      render :show and return
+    end
   end
 
   # POST /orders
