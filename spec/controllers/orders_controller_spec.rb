@@ -34,6 +34,17 @@ RSpec.describe OrdersController, type: :controller do
     end
   end
 
+  describe 'with no authorization' do
+    before(:each) do
+      request.env.delete 'HTTP_AUTHORIZATION'
+    end
+    it 'should render not authorized' do
+      order = Order.create! createable_attributes
+      get :show, params: {id: order.id}, session: valid_session, format: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "POST #create" do
     context "with valid params" do
       it "creates a new Order" do

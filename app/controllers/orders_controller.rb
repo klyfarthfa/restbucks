@@ -86,10 +86,8 @@ class OrdersController < ApplicationController
     end
 
     def authenticate
-      authenticate_with_http_basic do |user, password|
-        unless user == "happy" && password == "golucky"
-          head :forbidden and return
-        end
+      unless authenticate_with_http_basic { |user, password| user == "happy" && password == "golucky" }
+        head :forbidden and return
       end
     end
 end
