@@ -33,6 +33,32 @@ RSpec.describe "Orders", type: :request do
         expect(json["items"].count).to eq(1)
         expect(json["items"][0]).to eq({"id" => order.order_items.first.id, "quantity" => 1, "size" => 'small', "name" => 'latte', 'milk' => 'whole'})
       end
+      context 'links' do
+        shared_examples 'an order with an available link' do |link_name|
+          it "renders link for #{link_name}" do
+            get "/order/#{order.id}", headers: headers
+            json = response.parsed_body
+            expect(json["links"][link_name]).to be_present
+          end
+        end
+        STATE_LINKS_MAP = {
+          "pending" => ["payment"],
+          "prepared" => ["receipt"]
+        }
+        Order::VALID_STATES.each do |state|
+          context "order in #{state} state" do
+            before(:each) do
+              order.update_attribute(:state, state)
+            end
+            it_should_behave_like 'an order with an available link', "self"
+            if STATE_LINKS_MAP[state]
+              STATE_LINKS_MAP[state].each { |link_name|
+                it_should_behave_like 'an order with an available link', link_name
+              }
+            end
+          end
+        end
+      end
     end
     context 'with a non-existant order id' do
       it 'should render not found' do
